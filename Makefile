@@ -224,13 +224,13 @@ pseudoxml:
 
 .PHONY: dummy
 dummy:
-	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
+	$(SPHINXBUILD) -b dummy -q $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
 
 .PHONY: watch
 watch:
-	while sleep 1; do find . -path ./. -prune -o -print | entr -d $(MAKE) html; done
+	while sleep 1; do find . -path "./.*" -prune -o -print | entr -d $(MAKE) html; done
 
 .PHONY: meta
 meta:
