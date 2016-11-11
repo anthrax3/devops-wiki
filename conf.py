@@ -31,8 +31,12 @@
 # ones.
 extensions = [
         'sphinx.ext.mathjax',
-        'sphinxcontrib.seqdiag',
         'sphinx.ext.todo',
+        'sphinxcontrib.seqdiag',
+        'sphinxcontrib.actdiag',
+        'sphinxcontrib.blockdiag',
+        'sphinxcontrib.nwdiag',
+        'sphinxcontrib.spelling'
         ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -344,3 +348,4 @@ latex_elements = {
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #
 # texinfo_no_detailmenu = False
+spelling_word_list_filename='spelling_wordlist.txt'
