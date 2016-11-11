@@ -1,9 +1,11 @@
-FROM ubuntu:latest
+FROM ubuntu:xenial
 
 MAINTAINER Tornike Zedginidze <tokozedg@gmail.com>
 
 RUN \
-      apt-get clean && \
+      echo 'deb http://ppa.launchpad.net/jonathonf/sphinx/ubuntu xenial main' \
+      >> /etc/apt/sources.list && \
+      apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F06FC659 && \
       apt-get update && \
       apt-get install -y sphinx-common python-sphinxcontrib-programoutput \
       python-sphinxcontrib.seqdiag python-sphinxcontrib.actdiag \
