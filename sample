@@ -1,0 +1,26 @@
+Sample
+######
+
+.. sidebar:: Meta
+
+    :Optimization: Fine || Good || Bad
+    :Last Review: Never || $(date +'%d-%b')
+    :Importance: High
+    :Updated: |today|
+
+.. contents::
+    :Depth: 5
+
+...............................................................................
+
+Heading1
+********
+
+Subheading
+==========
+
+SubSubHeading
+-------------
+
+SubSubSubHeading
+................

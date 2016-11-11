@@ -1,0 +1,13 @@
+version: '2'
+services:
+  web:
+    image: sebp/lighttpd
+    volumes:
+      - ./.build/html:/var/www/localhost/htdocs
+    ports:
+      - 80:80
+  sphinx:
+    image: devops-wiki
+    restart: always
+    volumes:
+      - .:/opt/devops-wiki
