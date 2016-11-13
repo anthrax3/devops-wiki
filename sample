@@ -5,7 +5,7 @@ Sample
 
     :Optimization: Fine || Good || Bad
     :Last Review: Never || $(date +'%d-%b')
-    :Importance: High
+    :Importance: High || Medium || Low
     :Updated: |today|
 
 .. contents::
@@ -13,10 +13,10 @@ Sample
 
 ...............................................................................
 
-Heading1
+Heading
 ********
 
-Subheading
+SubHeading
 ==========
 
 SubSubHeading
