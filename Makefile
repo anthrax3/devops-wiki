@@ -224,9 +224,22 @@ pseudoxml:
 
 .PHONY: dummy
 dummy:
-	$(SPHINXBUILD) -b dummy -q $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
+	$(SPHINXBUILD) -b dummy -q $(ALLSPHINXOPTS) $(BUILDDIR)/dummy > \
+		$(BUILDDIR)/dummy/output.txt
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
+
+.PHONY: linecheck
+linecheck:
+	@mkdir -p $(BUILDDIR)/linecheck
+	@grep -r --include "*.rst" -n '.\{80,\}' -m 10 *  || \
+		echo "Linecheck finished without errors."
+
+.PHONY: test
+test: dummy
+test: linkcheck
+test: spelling
+test: linecheck
 
 .PHONY: watch
 watch:
