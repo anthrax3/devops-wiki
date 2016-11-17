@@ -230,6 +230,10 @@ build:
 build-sphinx:
 	docker build -t devops-wiki-sphinx -f Dockerfile.sphinx .
 
+.PHONY: dev
+dev:
+	docker-compose -f docker-compose-dev.yml up -d
+
 .PHONY: watch
 watch:
 	while sleep 1; do find . -path "./.*" -prune -o -print | \
