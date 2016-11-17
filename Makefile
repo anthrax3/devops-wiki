@@ -222,49 +222,15 @@ pseudoxml:
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
-.PHONY: dummy
-dummy:
-	$(SPHINXBUILD) -b dummy -q $(ALLSPHINXOPTS) $(BUILDDIR)/dummy > \
-		$(BUILDDIR)/dummy/output.txt
-	@echo
-	@echo "Build finished. Dummy builder generates no files."
-
-.PHONY: linecheck
-linecheck:
-	@mkdir -p $(BUILDDIR)/linecheck
-	@grep -r --include "*.rst" -n '.\{80,\}' -m 10 *  || \
-		echo "Linecheck finished without errors."
-
-.PHONY: test
-test: dummy
-test: linkcheck
-test: spelling
-test: linecheck
-
-.PHONY: watch
-watch:
-	while sleep 1; do find . -path "./.*" -prune -o -print | entr -d $(MAKE) html; done
-
-.PHONY: meta
-meta:
-	python gen_meta.py > meta.rst
-
-.PHONY: stop
-stop:
-	docker-compose stop
-
-.PHONY: run
-run:
-	docker-compose up -d
-
 .PHONY: build
 build:
 	docker build -t devops-wiki .
 
-.PHONY: shell
-shell:
-	docker exec -it devopswiki_sphinx_1 bash
+.PHONY: build-sphinx
+build-sphinx:
+	docker build -t devops-wiki-sphinx -f Dockerfile.sphinx .
 
-.PHONY: logs
-logs:
-	docker-compose logs -f
+.PHONY: watch
+watch:
+	while sleep 1; do find . -path "./.*" -prune -o -print | \
+	entr -d $(MAKE) html; done
