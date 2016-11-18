@@ -10,3 +10,4 @@ Stuff which should be in my head...
    :glob:
 
    books/index.rst
+   theory/index.rst
