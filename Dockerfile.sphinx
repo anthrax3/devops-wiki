@@ -16,5 +16,4 @@ RUN \
 
 WORKDIR /opt/devops-wiki/
 
-EXPOSE 80
 CMD make watch
