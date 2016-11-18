@@ -154,6 +154,7 @@ Implementing Pipeline
 
 #. Model Value Stream and Walking Skeleton (from development to release):
     .. image:: images/value-stream.png
+
     * Value stream defines wait time and actual working time required for each
       step.
     * Talk to people involved withing this project to draw a map with estimate
@@ -271,8 +272,10 @@ Functional
 
   *Happy Path*
       single cannonical path for the story (given-when-then)
+
   *Alternate Path*
       variation in the story path
+
   *Sad Path*
       path causes error condition
 
@@ -376,9 +379,12 @@ waiting instead of simply waiting for long period of time:
       }
 
 Auto acceptance test should use test doubles(one driver per external system)
-for external systems rather then reaching real systems. This gives 2 benefits:
+for external systems rather then reaching real systems.
+This gives 2 benefits:
+
   #. You can control external system initial state.
   #. Simulate external system error, failure etc.
+
 User acceptance test however might require real external system integration and
 production like env.
 
@@ -414,8 +420,10 @@ Non-Functional
 
   *performance*
       time single transaction takes.
+
   *throughput*
       how many transaction on a given period.
+
   *capacity*
       maximum transaction with accepatable perfomance.
 
@@ -455,6 +463,7 @@ change measurements.
 
 To balance between over-complex code which copes non-existing capacity issues
 and between assumption you will fix all capacity issues later:
+
   #. Decide app architecture (pay attention to IO boundaries: CPU, Disk etc).
   #. Understand patterns/anti-patterns that affect stability/capacity.
   #. Keep team working within the architecture and encourage clarity and
@@ -470,12 +479,14 @@ and between assumption you will fix all capacity issues later:
 Benchmark test such as interaction per second database handles are academic,
 and useful for optimizing specific area of system or choosing technology.
 Business side capacity test are needed separately such as:
+
   * How many sales per-second it handles on regular usage pattern?
   * Can predicted user-base work on peak loads?
 
 General strategy is to record acceptance test scenario path, post-process to
 scale up and replay them.
 Scenario-based capacity testing is helpful also to:
+
   * Reproduce complex production defect.
   * Detect memory leaks and garbage collection impact.
   * Simulated different scenarios etc.
@@ -581,6 +592,7 @@ version.
 
 Rollback plan can also be to redeploy whole env with a good working state
 config:
+
   * Pros: known fixed time it takes to deploy whole env, tested many times.
   * Cons: non-zero downtime, overwrites old version, if database is restored
     from backup new records gets lost
@@ -591,6 +603,7 @@ Zero-Downtime Release
 Or Hot-Deployment: Instant users switch to new version and instant rollback.
 Key is to decouple parts of application so that we can run new version of
 database, service, static resource standalone before updating whole app:
+
   * EC2 API uses version in URL and runs multiple version of the API
     (http://ec2.amazonaws.com/doc/2009-11-30/AmazonEC2.wsdl)
 
@@ -603,6 +616,7 @@ We deploy new version in Blue env, smoke test, let it warm up and than switch.
 
 Database is still an issue, before we switch we have to migrate Green db to
 Blue:
+
   * One way is to lock Green on write, move data to Blue, check if it runs ok,
     switch and enable write on blue.
     If issue happened before enabling write mode, it's safe to revert.
@@ -818,6 +832,7 @@ of db when we need rollback.
 
 Generally roll-back script can be designed to preserve transaction after
 migration. However if impossible there are two solutions:
+
   #. Cache user iterations to replay them later.
   #. Use blue-green deployment: backup production db, restore to second env and
      apply migrations. If we need roll-back we simply switch users to old env
@@ -827,6 +842,7 @@ migration. However if impossible there are two solutions:
 
 Good solution when application is released frequently is to decouple db
 deployment from application:
+
   #. New application is deployed which is compatible to current and new version
      of DB.
   #. When we are sure application works stable we can backup & migrate db to
@@ -838,6 +854,7 @@ procedures.
 In acceptance test, generally with *when* statement, we need initial data and
 initial state for the application. There are 3 strategies for managing data for
 acceptance tests:
+
   #. Organize test to isolate data between tests.
   #. Make test adaptive to evaluate its data env and adapt behavior.
   #. Test are run in known sequence and depends each other.
@@ -903,6 +920,7 @@ Keep Application Releasable
 When large teams are all working on the same master branch, it may cause some
 problems and merge conflicts, but using branches is not a solution. It will
 cause more problems when branches will be merged to master. Instead:
+
   #. Split large applications into components.
   #. Use incremental development.
   #. Use feature hiding.
