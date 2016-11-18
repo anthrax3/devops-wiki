@@ -237,4 +237,21 @@ dev:
 .PHONY: watch
 watch:
 	while sleep 1; do find . -path "./.*" -prune -o -print | \
-	entr -d $(MAKE) html; done
+		entr -d $(MAKE) html; done
+
+.PHONY: dummy
+dummy:
+	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
+	@echo
+	@echo "Build finished. Dummy builder generates no files."
+
+.PHONY: test
+test:
+	@! docker run --rm -t -v $(shell pwd):/opt/devops-wiki devops-wiki-sphinx \
+		make SPHINXOPTS="-q -N -E -a -n" dummy | grep -E "WARNING|ERROR"
+
+.PHONY: release
+release:
+	@docker run --rm -t -v $(shell pwd):/opt/devops-wiki devops-wiki-sphinx \
+		make html
+	$(MAKE) build
