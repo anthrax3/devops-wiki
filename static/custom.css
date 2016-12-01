@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu');
+
+body {
+  font-family: 'Ubuntu', sans-serif;
+}
+
+dl.option dt {
+  border-left: 2px solid #871c6f;
+  padding: 3px;
+  display: inline-block;
+  background: #e7f2fa;
+}
+
+dl.glossary dt {
+  font-size: 1em;
+}

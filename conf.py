@@ -154,6 +154,10 @@ html_theme_options = {
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #
+html_context = {
+    'css_files': ['_static/custom.css'],
+}
+
 html_logo = "static/it.png"
 
 # The name of an image file (relative to this directory) to use as a favicon of
