@@ -604,8 +604,8 @@ Or Hot-Deployment: Instant users switch to new version and instant rollback.
 Key is to decouple parts of application so that we can run new version of
 database, service, static resource standalone before updating whole app:
 
-  * EC2 API uses version in URL and runs multiple version of the API
-    (http://ec2.amazonaws.com/doc/2009-11-30/AmazonEC2.wsdl)
+  * EC2 API uses version in URL and runs multiple version of the API:
+    ``ec2.amazonaws.com/doc/2009-11-30/AmazonEC2.wsdl``
 
 Blue-Green Deployment
 =====================
