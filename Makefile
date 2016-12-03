@@ -244,3 +244,17 @@ dummy:
 	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
+
+.PHONY: sphinxrun
+sphinxrun:
+	docker-compose -f docker-compose-dev.yml run --rm sphinx make ${TARGET}
+
+.PHONY: test
+test:
+	make TARGET="spelling" sphinxrun
+	make TARGET="linkcheck" sphinxrun
+
+.PHONY: new-words
+new-words:
+	@make TARGET="spelling" sphinxrun 2>/dev/null 1>&2 || true
+	@cat .build/spelling/output.txt | sed  's/.*(\(.*\)).*/\1/' | sort | uniq
