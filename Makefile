@@ -224,11 +224,11 @@ pseudoxml:
 
 .PHONY: build
 build:
-	docker build -t devops-wiki .
+	docker build -t registry.devops.ge/devops-wiki .
 
 .PHONY: build-sphinx
 build-sphinx:
-	docker build -t devops-wiki-sphinx -f Dockerfile.sphinx .
+	docker build -t registry.devops.ge:5000/devops-wiki-sphinx -f Dockerfile.sphinx .
 
 .PHONY: dev
 dev:
@@ -244,14 +244,3 @@ dummy:
 	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
-
-.PHONY: test
-test:
-	@! docker run --rm -t -v $(shell pwd):/opt/devops-wiki devops-wiki-sphinx \
-		make SPHINXOPTS="-q -N -E -a -n" dummy | grep -E "WARNING|ERROR"
-
-.PHONY: release
-release:
-	@docker run --rm -t -v $(shell pwd):/opt/devops-wiki devops-wiki-sphinx \
-		make html
-	$(MAKE) build

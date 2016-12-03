@@ -34,7 +34,7 @@ Roles
   *ScrumMaster* (SM)
     * Keep scrum *Artifacts* visible
     * No management authority over the team
-    * Enforeces timeboxes and Scrum process
+    * Enforces timeboxes and Scrum process
 
 Meetings
 ********

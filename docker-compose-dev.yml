@@ -7,6 +7,6 @@ services:
     ports:
       - 8080:80
   sphinx:
-    image: devops-wiki-sphinx
+    image: registry.devops.ge:5000/devops-wiki-sphinx
     volumes:
       - .:/opt/devops-wiki

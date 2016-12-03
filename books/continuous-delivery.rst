@@ -31,7 +31,7 @@ Good CM Strategy:
 Application Configuration
 =========================
 
-Ideally application should generate default configuration catalogue on build
+Ideally application should generate default configuration catalog on build
 time.
 
 Configuration management principles:
@@ -224,9 +224,9 @@ Build Binary Once:
 Product-Orient Build Tools (Make, Rake) runs task in defined order however it
 check output of previous task timestamp to be later than current task output
 file timestamp. Known as incremental build and helps to run task whose
-dependant outputs were updated since the last build.
+dependent outputs were updated since the last build.
 
-Task Orient Build Tool (Ant, MsBuild) runs tasks after it's dependants and runs
+Task Orient Build Tool (Ant, MsBuild) runs tasks after it's dependents and runs
 each task only once.
 
 Build Scripts Principles:
@@ -271,7 +271,7 @@ Functional
 .. glossary::
 
   *Happy Path*
-      single cannonical path for the story (given-when-then)
+      single canonical path for the story (given-when-then)
 
   *Alternate Path*
       variation in the story path
@@ -425,7 +425,7 @@ Non-Functional
       how many transaction on a given period.
 
   *capacity*
-      maximum transaction with accepatable perfomance.
+      maximum transaction with acceptable performance.
 
 Measurements that can be performed:
 
@@ -607,7 +607,7 @@ database, service, static resource standalone before updating whole app:
   * EC2 API uses version in URL and runs multiple version of the API
     (http://ec2.amazonaws.com/doc/2009-11-30/AmazonEC2.wsdl)
 
-Blue-Green Delpoyment
+Blue-Green Deployment
 =====================
 
 .. image:: images/blue-green.png
@@ -886,14 +886,14 @@ rather than database imports.
  * RPO RTO PTO DRAAS
  * MTBF (mean time between failures) and MTTR (mean time to repair)
  * Db Migration tools: Tarantino, DbDiff, Ibatis Dbmigrate etc
- * Recipes for Cintinious Database Integration
+ * Recipes for Continuous Database Integration
  * Refactoring Databases
 
 VCS
 ***
 
 Developers work on master branch. You can create new release branch where only
-testing team authorises changes, or integration, release, maintenance branches
+testing team authorizes changes, or integration, release, maintenance branches
 where operations people are managing. Than we can add process so that changes
 must go from master to integration branch before release branch.
 
@@ -937,8 +937,8 @@ be merged back to mainline. To keep application master branch releasable all
 the time and at the same time make everyone work on master branch use following
 strategies:
 
-Hide New Functionalities Untils They're Finished
-................................................
+Hide New Functionalities Until They're Finished
+...............................................
 
 For e.g: with web application you can add new URL where new feature will be
 deployed and restrict access there and slowly link pages as they become
@@ -959,7 +959,7 @@ you notice that you do release every week, it's easier to use CI to track
 working and tested revisions instead of using branches.
 
 
-Depencdency Graphs
+Dependency Graphs
 ==================
 
 Cautious Optimism
