@@ -183,9 +183,10 @@ the problems quickly.
 
 Steps:
   #. Compile code
-  #. Executes commit tests (starting by unit test only, later add usually failed
-     tests from acceptance).
-  #. Create binaries/installer and store artifacts in artifact repo (not in VCS). 
+  #. Executes commit tests (starting by unit test only, later add usually
+     failed tests from acceptance).
+  #. Create binaries/installer and store artifacts in artifact repo (not in
+     VCS).
      If CI doesn't have artifact repo included, check Nexus or Artifactory.
   #. Perform code analysis: coverage, code duplication, compilation warnings,
      coding standards, cyclomatic complexity.
