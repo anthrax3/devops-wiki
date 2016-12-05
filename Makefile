@@ -245,14 +245,22 @@ dummy:
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
 
+.PHONY: linecheck
+linecheck:
+	@mkdir -p $(BUILDDIR)/linecheck
+	@grep -r --include "*.rst" -n '.\{80,\}' -m 10 * | \
+		tee ${BUILDDIR}/linecheck/output.txt
+	@echo "Linecheck complete. Look errors in $(BUILDDIR)/linecheck/output.txt"
+
 .PHONY: sphinxrun
 sphinxrun:
 	docker-compose -f docker-compose-dev.yml run --rm sphinx make ${TARGET}
 
 .PHONY: test
 test:
-	make TARGET="spelling" sphinxrun
-	make TARGET="linkcheck" sphinxrun
+	@make TARGET="spelling" sphinxrun
+	@make TARGET="linkcheck" sphinxrun
+	@make TARGET="linecheck" sphinxrun
 
 .PHONY: new-words
 new-words:
