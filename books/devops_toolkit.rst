@@ -55,29 +55,136 @@ services we are building do not truly adhere to the idea that each should
 provide a full functionality.
 
 Docker
-======
+******
 
 Use COPY unless you need additional features that ADD provides.
 
-::
+.. sourcecode:: sh
 
   DOCKER_OPTS="$DOCKER_OPTS --insecure-registry 10.100.198.200:5000
   -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
 
-::
+.. sourcecode:: sh
 
   PORT=$(docker inspect  --format='{{(index (index .NetworkSettings.Ports
   "8080/tcp") 0).HostPort}}' vagrant_app_1)
 
+.. sourcecode:: sh
+
+  # Use remote docker daemon
+  export DOCKER_HOST=tcp://prod:2375
+  docker ps
+
 docker-compose
-==============
+**************
 
 Use ``extends`` to override targets and avoid duplications.
 
-Run docker-compose on remote docker daemon::
+Service Discovery
+*****************
 
-  export DOCKER_HOST=tcp://prod:2375
-  docker-compose up -d app
+etcd
+====
+
+.. image:: images/docker-service-disc.png
+
+.. sourcecode:: sh
+
+  # Usage example
+
+  etcdctl set myService/ip "1.2.3.4"
+  etcdctl ls myService
+  etcdctl rm myService/port
+
+  curl http://localhost:2379/v2/keys/myService/newPort \
+  -X PUT \
+  -d value="4321" | jq '.'
+
+  curl http://localhost:2379/v2/keys/myService/newPort \
+  | jq '.'
+
+  curl http://localhost:2379/v2/keys/ | jq '.'
+
+.. sourcecode:: sh
+
+  # Cluster example
+
+  NODE_NAME=serv-disc-0$NODE_NUMBER
+  NODE_IP=10.100.197.20$NODE_NUMBER
+  NODE_01_ADDRESS=http://10.100.197.201:2380
+  NODE_01_NAME=serv-disc-01
+  NODE_01="$NODE_01_NAME=$NODE_01_ADDRESS"
+  NODE_02_ADDRESS=http://10.100.197.202:2380
+  NODE_02_NAME=serv-disc-02
+  NODE_01="$NODE_02_NAME=$NODE_02_ADDRESS"
+  NODE_03_ADDRESS=http://10.100.197.203:2380
+  NODE_03_NAME=serv-disc-03
+  NODE_01="$NODE_03_NAME=$NODE_03_ADDRESS"
+  CLUSTER_TOKEN=serv-disc-cluster
+
+  etcd -name serv-disc-1 \
+  -initial-advertise-peer-urls http://$NODE_IP:2380 \
+  -listen-peer-urls http://$NODE_IP:2380 \
+  -listen-client-urls \
+  http://$NODE_IP:2379,http://127.0.0.1:2379 \
+  -advertise-client-urls http://$NODE_IP:2379 \
+  -initial-cluster-token $CLUSTER_TOKEN \
+  -initial-cluster \
+  $NODE_01,$NODE_02,$NODE_03 \
+  -initial-cluster-state new
+
+registrator
+-----------
+
+Detects container run/termination and updates service discovery. Supports etcd,
+Consul, SkyDNS.
+
+.. sourcecode:: sh
+
+  docker run -d --name registrator \
+    -v /var/run/docker.sock:/tmp/docker.sock \
+    -h serv-disc-01 \
+    gliderlabs/registrator \
+    -ip 10.100.194.201 etcd://10.100.194.201:2379
+
+  # Set friendly service name for registrator per container
+  docker run -d --name nginx \
+    --env SERVICE_NAME=nginx \
+    --env SERVICE_ID=nginx \
+    -p 1234:80 \
+    nginx
+
+confd
+-----
+
+Build application configuration file from template and service discovery
+key/values.
+
+Daemon polls service discovery and updates config files.
+
+.. sourcecode:: sh
+
+   # One time
+   confd -onetime -backend etcd -node 10.100.197.202:2379
+
+Sample config stenza::
+
+  # /etc/confd/conf.d/example.toml
+  [template]
+  src = "nginx.conf.tmpl"
+  dest = "/tmp/nginx.conf"
+  keys = [
+     "/nginx-80/nginx"
+  ]
+
+Sample template file. Uses Golang text templates::
+
+  # /etc/confd/templates/example.conf.toml
+  The address is {{getv "/nginx-80/nginx"}}
+
+
+Concul
+======
 
 book-ms
 *******
@@ -136,10 +243,12 @@ Pipeline
 1. ``git clone https://github.com/vfarcic/books-ms.git``
 2. Tests that do not require the service to be deployed.
 
-   .. sourcecode:: shell
+   .. sourcecode:: sh
 
      docker build -f Dockerfile.test -t 10.100.198.200:5000/books-ms-tests .
      docker-compose -f docker-compose-dev.yml run --rm tests
+
 3. Generated after tests: ``ll target/scala-2.10/``
 4. ``docker build -t 10.100.198.200:5000/books-ms .``
 5. ``docker push 10.100.198.200:5000/books-ms``
+
