@@ -167,7 +167,7 @@ Daemon polls service discovery and updates config files.
    # One time
    confd -onetime -backend etcd -node 10.100.197.202:2379
 
-Sample config stenza::
+Sample config stanza::
 
   # /etc/confd/conf.d/example.toml
   [template]
