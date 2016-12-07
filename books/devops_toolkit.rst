@@ -86,7 +86,7 @@ Service Discovery
 etcd
 ====
 
-.. image:: images/docker-service-disc.png
+.. image:: images/etcd-docker.png
 
 .. sourcecode:: sh
 
@@ -183,8 +183,132 @@ Sample template file. Uses Golang text templates::
   The address is {{getv "/nginx-80/nginx"}}
 
 
-Concul
+Consul
 ======
+
+.. image:: images/consul-docker.png
+
+Implements service discovery system embedded.
+Clients only need to register services and perform discovery using the DNS or
+HTTP interface.
+Includes ability to discover deployed services and nodes they reside on and
+implement health checks via TCP, HTTP, custom scripts, TTL, docker commands.
+
+Consul uses *gossip*: one node should run Consul in the server node and the
+rest should join at least one node so that Consul can gossip that information
+to the whole cluster.
+
+.. sourcecode:: sh
+
+ consul agent \
+   -server \
+   -bootstrap-expect 1 \ #expect 1 server instance
+   -ui-dir /data/consul/ui \
+   -data-dir /data/consul/data \
+   -config-dir /data/consul/config \
+   -node=cd \
+   -bind=10.100.198.200 \
+   -client=0.0.0.0 \ # clients from any source
+   >/tmp/consul.log &
+
+.. sourcecode:: sh
+
+  curl -X PUT -d 'this is a test'  http://localhost:8500/v1/kv/msg1
+  curl -X PUT -d 'this is another test' \
+   http://localhost:8500/v1/kv/messages/msg2
+  curl -X PUT -d 'this is a test with flags' \
+   http://localhost:8500/v1/kv/messages/msg3?flags=1234
+  # Flags is integers and used to store version or any other info with the key.
+
+  curl http://localhost:8500/v1/kv/?recurse | jq '.'
+  curl http://localhost:8500/v1/kv/msg1?raw # only value
+  curl -X DELETE http://localhost:8500/v1/kv/messages/msg2<Paste>
+
+.. sourcecode:: sh
+
+  # Join agent to server
+  consul agent \
+   -ui-dir /data/consul/ui \
+   -data-dir /data/consul/data \
+   -config-dir /data/consul/config \
+   -node=serv-disc-02 \
+   -bind=10.100.197.202 \
+   -client=0.0.0.0 \
+   >/tmp/consul.log &
+
+  consul join 10.100.198.200
+
+  curl serv-disc-01:8500/v1/catalog/nodes | jq '.'
+
+registrator
+-----------
+
+Run registrator with consulkv protocol.
+
+.. sourcecode:: sh
+
+  docker run -d --name registrator-consul-kv \
+   -v /var/run/docker.sock:/tmp/docker.sock \
+   -h serv-disc-01 \
+   gliderlabs/registrator \
+   -ip 10.100.194.201 consulkv://10.100.194.201:8500/services
+
+  curl http://serv-disc-01:8500/v1/kv/services/nginx-80/nginx?raw
+
+With consul protocol we can additional info.
+
+.. sourcecode:: sh
+
+  docker run -d --name registrator-consul \
+  -v /var/run/docker.sock:/tmp/docker.sock \
+  -h serv-disc-01 \
+  gliderlabs/registrator \
+  -ip 10.100.194.201 consul://10.100.194.201:8500
+
+  docker run -d --name nginx2 \
+    --env "SERVICE_ID=nginx2" \
+    --env "SERVICE_NAME=nginx" \
+    --env "SERVICE_TAGS=balancer,proxy,www" \
+    -p 1111:80 \
+    nginx
+
+consul-template
+----------------
+
+.. sourcecode:: sh
+
+  #/tmp/nginx.ctmpl
+  {{range service "nginx"}}
+  The address is {{.Address}}:{{.Port}}
+  {{end}}
+
+  consul-template \
+   -consul serv-disc-01:8500 \
+   -template "/tmp/nginx.ctmpl:/tmp/nginx.conf" \
+   -once
+
+
+  curl http://serv-disc-01:8500/v1/catalog/service/nginx-80 | jq '.'
+
+  [
+    {
+      "ModifyIndex": 96,
+      "CreateIndex": 96,
+      "Node": "serv-disc-01",
+      "Address": "10.100.194.201",
+      "ServiceID": "nginx2",
+      "ServiceName": "nginx-80",
+      "ServiceTags": [
+        "balancer",
+        "proxy",
+        "www"
+      ],
+      "ServiceAddress": "10.100.194.201",
+      "ServicePort": 1111,
+      "ServiceEnableTagOverride": false
+    }
+  ]
+
 
 book-ms
 *******
