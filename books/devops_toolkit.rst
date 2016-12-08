@@ -13,6 +13,73 @@ Devops Toolkit 2.0
 
 ...............................................................................
 
+book-ms
+*******
+
+Vagrant
+=======
+
+:dev: 10.100.199.200
+
+Dockerfile
+==========
+
+Runs compiled JAR application.
+
+docker-compose-dev.yml
+======================
+
+.. option:: app
+
+  Run application linked to MongoDB container.
+
+.. option:: tests
+
+  Run all pre-deployment test and compile to JAR.
+
+.. option:: testsLocal
+
+  Start db, run functional, unit, front tests and compile to JAR.
+
+.. option:: feTestsLocal
+
+  Run whole application and watch for changes to run tests.
+
+ms-lifecycle
+************
+
+Vagrant
+=======
+
+:cd: 10.100.198.200
+:prod: 10.100.198.201
+
+Pipeline
+========
+
+1. Check out the code
+2. Run pre-deployment tests
+3. Compile and/or package the code
+4. Build the container
+#. Push the container to the registry
+#. Deploy the container to the production server
+#. Integrate the container
+#. Run post-integration tests
+#. Push the tests container to the registry
+
+1. ``git clone https://github.com/vfarcic/books-ms.git``
+2. Tests that do not require the service to be deployed.
+
+   .. sourcecode:: sh
+
+     docker build -f Dockerfile.test -t 10.100.198.200:5000/books-ms-tests .
+     docker-compose -f docker-compose-dev.yml run --rm tests
+
+3. Generated after tests: ``ll target/scala-2.10/``
+4. ``docker build -t 10.100.198.200:5000/books-ms .``
+5. ``docker push 10.100.198.200:5000/books-ms``
+
+
 
 System Architecture
 *******************
@@ -79,6 +146,8 @@ docker-compose
 **************
 
 Use ``extends`` to override targets and avoid duplications.
+
+``docker-compose scale app=2``
 
 Service Discovery
 *****************
@@ -309,70 +378,65 @@ consul-template
     }
   ]
 
+Proxy
+*****
 
-book-ms
-*******
+.. image:: images/proxy-docker.png
+   :width: 300pt
 
-Vagrant
+nginx
+=====
+
+::
+
+  # Reloads config
+  docker kill -s HUP nginx
+
+::
+
+  # Sample Concul template
+  upstream books-ms {
+      {{range service "books-ms" "any"}}
+      server {{.Address}}:{{.Port}};
+      {{end}}
+  }
+
+  upstream books-ms {
+      server 10.100.193.200:32768;
+      server 10.100.193.200:32769;
+  }
+
+
+  location /api/v1/books {
+    proxy_pass http://books-ms/api/v1/books;
+    proxy_next_upstream error timeout invalid_header http_500;
+  }
+
+haproxy
 =======
 
-:dev: 10.100.199.200
+HAProxy can drop traffic during reloads.
+Official container doesn't support config reload.
+Logs aren't sent to stdout, we can use syslog for HAProxy logs withing
+container.
 
-Dockerfile
-==========
+::
 
-Runs compiled JAR application.
+  # Define a frontend called books-ms-fe, bind it to the port 80 and, whenever
+  # the request part starts with /api/v1/books, use the backend called
+  # books-ms-be
 
-docker-compose-dev.yml
-======================
+  frontend books-ms-fe # location in nginx
+    bind *:80
+    option http-server-close
+    acl url_books-ms path_beg /api/v1/books
+    use_backend books-ms-be if url_books-ms
+  backend books-ms-be # upstream in nginx
+    server books-ms-1 10.100.193.200:$PORT check
 
-.. option:: app
+  # Sample Consul template
 
-  Run application linked to MongoDB container.
-
-.. option:: tests
-
-  Run all pre-deployment test and compile to JAR.
-
-.. option:: testsLocal
-
-  Start db, run functional, unit, front tests and compile to JAR.
-
-.. option:: feTestsLocal
-
-  Run whole application and watch for changes to run tests.
-
-ms-lifecycle
-************
-
-Vagrant
-=======
-
-:cd: 10.100.198.200
-:prod: 10.100.198.201
-
-Pipeline
-========
-
-1. Check out the code
-2. Run pre-deployment tests
-3. Compile and/or package the code
-4. Build the container
-#. Push the container to the registry
-#. Deploy the container to the production server
-#. Integrate the container
-#. Run post-integration tests
-#. Push the tests container to the registry
-
-1. ``git clone https://github.com/vfarcic/books-ms.git``
-2. Tests that do not require the service to be deployed.
-
-   .. sourcecode:: sh
-
-     docker build -f Dockerfile.test -t 10.100.198.200:5000/books-ms-tests .
-     docker-compose -f docker-compose-dev.yml run --rm tests
-
-3. Generated after tests: ``ll target/scala-2.10/``
-4. ``docker build -t 10.100.198.200:5000/books-ms .``
-5. ``docker push 10.100.198.200:5000/books-ms``
-
+  backend books-ms-be
+      {{range service "books-ms" "any"}}
+      server {{.Node}}_{{.Port}} {{.Address}}:{{.Port}} check
+      {{end}}

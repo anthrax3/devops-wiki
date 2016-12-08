@@ -60,3 +60,6 @@ etcd
 Golang
 registrator
 consulkv
+nginx
+haproxy
+stdout
