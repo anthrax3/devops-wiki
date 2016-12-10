@@ -13,6 +13,54 @@ Devops Toolkit 2.0
 
 ...............................................................................
 
+Pipeline
+========
+
+.. image:: images/pipeline-ansible.png
+   :align: center
+   :width: 500pt
+
+1. Check out the code
+2. Run pre-deployment tests
+3. Compile and/or package the code
+4. Build the container
+5. Push the container to the registry
+6. Deploy the container to the production server
+7. Integrate the container
+8. Run post-integration tests
+9. Push the tests container to the registry
+
+
+Manual
+------
+
+1. ``git clone https://github.com/vfarcic/books-ms.git``
+2. Tests that do not require the service to be deployed.
+
+   .. sourcecode:: sh
+
+     docker build -f Dockerfile.test -t 10.100.198.200:5000/books-ms-tests .
+     docker-compose -f docker-compose-dev.yml run --rm tests
+
+3. Generated after tests: ``ll target/scala-2.10/``
+4. ``docker build -t 10.100.198.200:5000/books-ms .``
+5. ``docker push 10.100.198.200:5000/books-ms``
+6. ``docker-compose up -d app``
+7. .. sourcecode:: sh
+
+     consul-template  -consul localhost:8500 \
+      -template "/data/nginx/upstreams/books-ms.ctmpl:\
+      /data/nginx/upstreams/books-ms.conf:\
+      docker kill -s HUP nginx" -once
+8. .. sourcecode:: sh
+
+     docker-compose \
+     -f docker-compose-dev.yml \
+     run --rm \
+     -e DOMAIN=http://10.100.198.201 \
+     integ
+9. ``docker push 10.100.198.200:5000/books-ms-tests``
+
 book-ms
 *******
 
@@ -54,33 +102,6 @@ Vagrant
 :cd: 10.100.198.200
 :prod: 10.100.198.201
 
-Pipeline
-========
-
-1. Check out the code
-2. Run pre-deployment tests
-3. Compile and/or package the code
-4. Build the container
-#. Push the container to the registry
-#. Deploy the container to the production server
-#. Integrate the container
-#. Run post-integration tests
-#. Push the tests container to the registry
-
-1. ``git clone https://github.com/vfarcic/books-ms.git``
-2. Tests that do not require the service to be deployed.
-
-   .. sourcecode:: sh
-
-     docker build -f Dockerfile.test -t 10.100.198.200:5000/books-ms-tests .
-     docker-compose -f docker-compose-dev.yml run --rm tests
-
-3. Generated after tests: ``ll target/scala-2.10/``
-4. ``docker build -t 10.100.198.200:5000/books-ms .``
-5. ``docker push 10.100.198.200:5000/books-ms``
-
-
-
 System Architecture
 *******************
 
@@ -111,6 +132,8 @@ calls.
 
 
 .. image:: images/micro_shared_db.png
+   :align: center
+   :width: 500pt
 
 On refactoring legacy systems to microservices, database is the most sensible
 and high risk park. There is one approach when we have shared database but
@@ -156,6 +179,8 @@ etcd
 ====
 
 .. image:: images/etcd-docker.png
+   :align: center
+   :width: 500pt
 
 .. sourcecode:: sh
 
@@ -256,6 +281,8 @@ Consul
 ======
 
 .. image:: images/consul-docker.png
+   :align: center
+   :width: 500pt
 
 Implements service discovery system embedded.
 Clients only need to register services and perform discovery using the DNS or
@@ -291,6 +318,7 @@ to the whole cluster.
 
   curl http://localhost:8500/v1/kv/?recurse | jq '.'
   curl http://localhost:8500/v1/kv/msg1?raw # only value
+  curl http://localhost:8500/v1/catalog/services | jq '.'
   curl -X DELETE http://localhost:8500/v1/kv/messages/msg2<Paste>
 
 .. sourcecode:: sh
@@ -382,7 +410,8 @@ Proxy
 *****
 
 .. image:: images/proxy-docker.png
-   :width: 300pt
+   :align: center
+   :width: 500pt
 
 nginx
 =====
