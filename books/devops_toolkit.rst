@@ -61,6 +61,35 @@ Manual
      integ
 9. ``docker push 10.100.198.200:5000/books-ms-tests``
 
+Automation
+==========
+
+Role *service*
+--------------
+
+Pre-Deployment:
+
+#. Pull *book-ms-tests* container.
+#. Build new *book-ms-tests* container.
+#. Run tests with *docker-compse*.
+#. Pull *book-ms* container.
+#. Build new *book-ms* container and push to registry.
+
+Deployment:
+
+#. Create application dir: */data/book-ms*.
+#. Download files required: *docker-compose.yml, nginx-includes.conf and
+   nginx-upstreams.ctmpl*
+#. Run *docker-compose* in application dir to pull new images and start
+   containers as daemon.
+#. Use *consul-template* to update *nginx* configuration once.
+
+Post-Deployment:
+
+#. Run integration test against newly launched application.
+#. Push *book-ms-tests* container to registry.
+
+
 book-ms
 *******
 
