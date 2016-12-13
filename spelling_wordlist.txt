@@ -63,3 +63,5 @@ consulkv
 nginx
 haproxy
 stdout
+Plugins
+plugin

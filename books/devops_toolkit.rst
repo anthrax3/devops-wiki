@@ -498,3 +498,106 @@ container.
       {{range service "books-ms" "any"}}
       server {{.Node}}_{{.Port}} {{.Address}}:{{.Port}} check
       {{end}}
+
+Jenkins
+=======
+
+Use CM to manage jobs with XML in *jenkins* as it will be easier to make
+changes. Plugins such as *Template Project Plugin* can be used for easier
+management.
+
+WorkFlow Plugin
+---------------
+
+workflow-util
+.............
+
+Export general functions in separate file to include and use for other jobs.
+
+.. sourcecode:: groovy
+
+  import groovy.json.JsonSlurper
+  import org.apache.commons.httpclient.HttpClient
+  import org.apache.commons.httpclient.methods.GetMethod
+
+
+  def provision(playbook) {
+      stage "Provision"
+      env.PYTHONUNBUFFERED = 1
+      sh "ansible-playbook /vagrant/ansible/${playbook} \
+          -i /vagrant/ansible/hosts/prod"
+  }
+
+  def buildTests(serviceName, registryIpPort) {
+      stage "Build tests"
+      def tests = docker.image("${registryIpPort}/${serviceName}-tests")
+      try {
+          tests.pull()
+      } catch(e) {}
+      sh "docker build -t \"${registryIpPort}/${serviceName}-tests\" \
+          -f Dockerfile.test ."
+      tests.push()
+  }
+
+  def runTests(serviceName, target, extraArgs) {
+      stage "Run ${target} tests"
+      sh "docker-compose -f docker-compose-dev.yml \
+          run --rm ${extraArgs} ${target}"
+  }
+  def buildService(serviceName, registryIpPort) {
+      stage "Build service"
+      def service = docker.image("${registryIpPort}/${serviceName}")
+      try {
+          service.pull()
+      } catch(e) {}
+      docker.build "${registryIpPort}/${serviceName}"
+      service.push()
+  }
+
+  def deploy(serviceName, prodIp) {
+      stage "Deploy"
+      withEnv(["DOCKER_HOST=tcp://${prodIp}:2375"]) {
+          sh "docker-compose pull app"
+          sh "docker-compose -p ${serviceName} up -d app"
+      }
+  }
+
+  def deployBG(serviceName, prodIp, color) {
+      stage "Deploy"
+      withEnv(["DOCKER_HOST=tcp://${prodIp}:2375"]) {
+          sh "docker-compose pull app-${color}"
+          sh "docker-compose -p ${serviceName} up -d app-${color}"
+      }
+  }
+  .....
+
+
+Jenkinsfile
+...........
+
+Use parameters for jobs and include functions from general groovy script.
+
+.. sourcecode:: groovy
+
+  node("cd") {
+      git url: "https://github.com/vfarcic/${serviceName}.git"
+      def flow = load "/data/scripts/workflow-util.groovy"
+      flow.provision("prod2.yml")
+      flow.buildTests(serviceName, registryIpPort)
+      flow.runTests(serviceName, "tests", "")
+      flow.buildService(serviceName, registryIpPort)
+      flow.deploy(serviceName, prodIp)
+      flow.updateProxy(serviceName, "prod")
+      flow.runTests(serviceName, "integ", "-e DOMAIN=http://${proxyIp}")
+  }
+
+Multibranch Jenkinsfiles
+........................
+
+When creating *Multibranch* job in *jenkins*, it will monitor branches
+created/removed and adds/removes jobs based on *Jenkinsfile* within each
+branch.
+This gives us possibility to monitor branches started with certain name, and
+use different CI/CD process for different branches. For e.g working branch for
+developers can include only test/build stages, and master branch all stages
+including deploy.
