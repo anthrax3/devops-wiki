@@ -11,3 +11,4 @@ Stuff which should be in my head...
 
    books/index.rst
    theory/index.rst
+   dev/index.rst
