@@ -9,6 +9,4 @@ Stuff which should be in my head...
    :maxdepth: 2
    :glob:
 
-   books/index.rst
-   theory/index.rst
-   dev/index.rst
+   prod/index.rst
