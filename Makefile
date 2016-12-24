@@ -232,7 +232,7 @@ build-sphinx:
 
 .PHONY: dev
 dev:
-	docker-compose -f docker-compose-dev.yml up -d
+	docker-compose up -d
 
 .PHONY: watch
 watch:
@@ -254,7 +254,7 @@ linecheck:
 
 .PHONY: sphinxrun
 sphinxrun:
-	docker-compose -f docker-compose-dev.yml run --rm sphinx make ${TARGET}
+	docker-compose run --rm sphinx make ${TARGET}
 
 .PHONY: test
 test:
